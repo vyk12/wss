@@ -34,5 +34,20 @@ user.save(function (err) {
   	if (err) { throw err; }
  	console.log('User added !');
 
- 	mongoose.connection.close();
+ 	UserModel.find(null, function(err, users) {
+	  	if (err) { throw err; }
+	  	console.log(users);
+
+	  	UserModel.remove({ nickname: 'vyk12' }, function(err) {
+	  		if (err) { throw err; }
+	  		console.log('Users deleted !');
+
+	  		UserModel.find(null, function(err, users) {
+			  	if (err) { throw err; }
+			  	console.log(users);
+			  	
+		  		mongoose.connection.close();
+		  	});
+	  	});
+	});
 });
