@@ -15,3 +15,24 @@ var server = http.createServer(function(request, response) {
 }).listen(80);
 
 var io = require('socket.io').listen(server);
+
+mongoose.connect('mongodb://localhost/game', function(err) {
+ 	if (err) { throw err; }
+});
+
+var userSchema = new mongoose.Schema({
+ 	nickname: String,
+ 	password: String,
+ 	wins: { type: Number, min: 0, default: 0},
+ 	losses: { type: Number, min: 0, default: 0}
+});
+
+var UserModel = mongoose.model('users', userSchema);
+
+var user = new UserModel({ nickname : 'vyk12' });
+user.save(function (err) {
+  	if (err) { throw err; }
+ 	console.log('User added !');
+
+ 	mongoose.connection.close();
+});
