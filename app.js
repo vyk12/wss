@@ -1,20 +1,14 @@
 var http = require('http');
-var fs = require('fs');
+var nodeStatic = require('node-static');
 
-// Chargement du fichier index.html affiché au client
-var server = http.createServer(function(req, res) {
-    fs.readFile('./index.html', 'utf-8', function(error, content) {
-        res.writeHead(200, {"Content-Type": "text/html"});
-        res.end(content);
-    });
-});
+var file = new nodeStatic.Server('./public');
 
-// Chargement de socket.io
-var io = require('socket.io').listen(server);
-
-// Quand on client se connecte, on le note dans la console
-io.sockets.on('connection', function(socket) {
-    socket.emit('message', 'Vous êtes bien connecté !');
-});
-
-server.listen(80);
+http.createServer(function(request, response) {
+    request.addListener('end', function() {
+        file.serve(request, response, function(e, res) {
+        	if (e && (e.status === 404)) {
+                file.serveFile('/404.html', 404, {}, request, response);
+            }
+        });
+    }).resume();
+}).listen(8080);
