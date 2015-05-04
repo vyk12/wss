@@ -1,18 +1,16 @@
 Game.gameType = ONLINE;
 
-var socket = io.connect('http://localhost:8080');
+var socket = io.connect('http://vps165415.ovh.net/');
 
 socket.on('nbr-of-players', function(data) {
 	if (data == 1) {
 		Game.playerColor = BLACK;
-		console.log('You are the first one');
 		$('#status').html('Waiting for a player...');
 	}
 	else {
 		$('#status').remove();
 
 		if (typeof Game.playerColor === 'undefined') {
-			console.log('You are the second one');
 			Game.playerColor = WHITE;
 		}
 
