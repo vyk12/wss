@@ -1,0 +1,11 @@
+table {
+	width: auto;
+	margin: auto;
+}
+
+td {
+	width: 100px;
+	height: 100px;
+	border: 1px solid #040;
+	background-color: #080;
+}
