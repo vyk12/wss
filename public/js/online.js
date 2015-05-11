@@ -50,7 +50,6 @@ var startGame = function() {
 };
 
 io.emit('join', function(nbrOfPlayers) {
-    console.log(nbrOfPlayers);
 	if (nbrOfPlayers === 1) {
         console.log('You are the first one !');
 		Game.playerColor = BLACK;
@@ -60,6 +59,10 @@ io.emit('join', function(nbrOfPlayers) {
         Game.playerColor = WHITE;
         startGame();
     }
+});
+
+io.on('message-received', function(data) {
+    $('#chat-messages').append('<strong>' + data.name + '</strong> : ' + data.message + '<br />');
 });
 
 io.on('play-again', function(response) {
@@ -79,4 +82,17 @@ io.on('only-one-connected', function() {
 
         App.goToPage(2);
     }
+});
+
+$(function() {
+    $('#chat-message').keypress(function(e) {
+        console.log('Sending message');
+        
+        if (e.which === 13) {
+            console.log('Message sent !');
+            io.emit('new-message', $(this).val());
+            
+            $(this).val('');
+        }
+    });
 });

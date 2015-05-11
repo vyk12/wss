@@ -42,16 +42,6 @@ var getRoom = function(req) {
     }
 };
 
-/*
-List of rooms available in : req.io.manager.rooms
-Format : { '' : [ array of rooms' ids ], '/Room name' : [ array of clients' ids ] }
-
-List of clients available in : req.io.manager.roomClients
-Format : { 'client id' : { '' : boolean (true = the client is in a room), '/Room name' : true (the client is in this room) }}
-        
-User id available at : req.io.socket.id
-*/
-
 app.io.sockets.on('connection', function(socket) {
     socket.on('disconnect', function() {
         users.signOut(socket.id);
@@ -101,8 +91,6 @@ app.io.route('join', function(req) {
                 joined = true;
                 
                 checkOpponent(req, roomName);
-                console.log('Join room #' + roomName);
-                
                 req.io.room(roomName).broadcast('start-game');
                 
                 req.io.respond(2);
@@ -117,7 +105,6 @@ app.io.route('join', function(req) {
     if (joined === false) {
         req.io.join(roomName);
         checkOpponent(req, roomName);
-        console.log('Created room #' + roomName);
     }
     
     req.io.respond(1);
@@ -128,9 +115,11 @@ app.io.route('leave', function(req) {
         return;
     }
     
-    console.log(req.io.manager.rooms);
     req.io.leave(getRoom(req));
-    console.log(req.io.manager.rooms);
+});
+
+app.io.route('new-message', function(req) {
+    app.io.room(getRoom(req)).broadcast('message-received', { name: req.session.user.nickname, message: req.data });
 });
 
 app.io.route('pawn-created', function(req) {

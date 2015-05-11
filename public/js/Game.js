@@ -14,6 +14,7 @@ var Game = {
         
 		this.board = new Board();
         this.playing = true;
+        this.callbacks = {};
         
 		if (this.playerColor === undefined) {
 			this.playerColor = BLACK;
