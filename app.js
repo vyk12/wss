@@ -1,34 +1,15 @@
-var express = require('express');
-var engine = require('ejs-locals');
+var express = require('express.io');
 var mongoose = require('mongoose');
-var bodyParser = require('body-parser');
 var md5 = require('MD5');
-var session = require('express-session');
-var sessionMiddleware = session({
-	secret: 'R94E8F8ZE4FEZ891FE87RGF8ZE1F',
-	resave: false,
-	saveUninitialized: false
-});
+var users = require('./lib/users.js');
 
 var app = express();
-var server = require('http').createServer(app);
-var io = require('socket.io').listen(server);
-
-var rooms = require('./lib/rooms');
-
-app.engine('ejs', engine);
-app.set('view engine', 'ejs');
-
-app.use(bodyParser.urlencoded({
-	extended: true
-}));
+app.http();
+app.io();
 
 app.use(express.static(__dirname + '/public'));
-app.use(sessionMiddleware);
-
-io.use(function(socket, next) {
-    sessionMiddleware(socket.request, socket.request.res, next);
-});
+app.use(express.cookieParser());
+app.use(express.session({secret: 'ZE9F519ZES5F9Z5DF2Z9EFD1ZE98F2'}));
 
 mongoose.connect('mongodb://localhost/game', function(err) {
  	if (err) { throw err; }
@@ -43,52 +24,134 @@ var userSchema = new mongoose.Schema({
 
 var UserModel = mongoose.model('users', userSchema);
 
-app.get('/', function(req, res) {
-    res.setHeader('Content-Type', 'text/html');
-    res.render('index.ejs', { title: 'HoneyFoo', isAuthenticated: req.session.authenticated });
-});
+var checkOpponent = function(req, roomName) {
+    var interval = setInterval(function() {
+        if (req.io.manager.rooms['/' + roomName].length === 1) {
+            app.io.room(roomName).broadcast('only-one-connected');
 
-app.post('/create-room', function(req, res) {
-	var response = {};
+            clearInterval(interval);
+        }
+    }, 1000);
+};
 
-	rooms.add(req.body.name);
-
-	response.success = true;
-	response.roomId = rooms.currentId;
-
-	res.send(JSON.stringify(response));
-});
-
-app.get('/game', function(req, res) {
-	res.render('game.ejs', { title: 'HoneyFoo' });
-});
-
-app.get('/get-rooms', function(req, res) {
-	var response = {};
-
-	response.success = true;
-	response.rooms = rooms.getAll();
-
-	res.send(JSON.stringify(response));
-});
-
-app.get('/room-:id', function(req, res) {
-    res.setHeader('Content-Type', 'text/html');
-
-    var room = rooms.get(req.params.id);
-
-    console.log(room);
-    console.log(typeof req.session.room);
-
-    if (room && typeof req.session.room === 'undefined') { // if the room exists and the user is not in another room
-    	req.session.room = room;
-    	res.render('room.ejs', { title: room.name + ' - HoneyFoo', room: room });
+var getRoom = function(req) {
+    for (var key in req.io.manager.roomClients[req.io.socket.id]) {
+        if (key !== '') {
+            return key.substr(1);
+        }
     }
+};
+
+/*
+List of rooms available in : req.io.manager.rooms
+Format : { '' : [ array of rooms' ids ], '/Room name' : [ array of clients' ids ] }
+
+List of clients available in : req.io.manager.roomClients
+Format : { 'client id' : { '' : boolean (true = the client is in a room), '/Room name' : true (the client is in this room) }}
+        
+User id available at : req.io.socket.id
+*/
+
+app.io.sockets.on('connection', function(socket) {
+    socket.on('disconnect', function() {
+        users.signOut(socket.id);
+    });
 });
 
-app.post('/signin', function(req, res) {
-	var nickname = req.body.nickname;
-	var password = req.body.password;
+app.io.route('game-over', function(req) {
+    if (!req.session.authenticated) {
+        return;
+    }
+    
+    if (req.data.tie === true) {
+        return;
+    }
+
+    UserModel.findOne({ nickname: req.session.user.nickname }, function(err, user) {
+        if (err) {
+            return;
+        }
+
+        if (req.data.victory === true) {
+            ++user.wins;
+        }
+        else if (req.data.defeat === true) {
+            ++user.losses;
+        }
+
+        user.save();
+    });
+});
+
+app.io.route('join', function(req) {
+    if (!req.session.authenticated) {
+        return;
+    }
+    
+    var joined = false;
+    var lastKey;
+    var roomName;
+    
+    for (var key in req.io.manager.rooms) {
+        if (key !== '') {
+            if (req.io.manager.rooms[key].length === 1) {
+                roomName = key.substr(1);
+                
+                req.io.join(roomName);
+                joined = true;
+                
+                checkOpponent(req, roomName);
+                console.log('Join room #' + roomName);
+                
+                req.io.room(roomName).broadcast('start-game');
+                
+                req.io.respond(2);
+            }
+        }
+        
+        lastKey = key;
+    }
+    
+    roomName = lastKey === '' ? 1 : parseInt(lastKey.substr(1)) + 1;
+    
+    if (joined === false) {
+        req.io.join(roomName);
+        checkOpponent(req, roomName);
+        console.log('Created room #' + roomName);
+    }
+    
+    req.io.respond(1);
+});
+
+app.io.route('leave', function(req) {
+    if (!req.session.authenticated) {
+        return;
+    }
+    
+    console.log(req.io.manager.rooms);
+    req.io.leave(getRoom(req));
+    console.log(req.io.manager.rooms);
+});
+
+app.io.route('pawn-created', function(req) {
+    if (!req.session.authenticated) {
+        return;
+    }
+    
+    req.io.room(getRoom(req)).broadcast('pawn-created', req.data);
+});
+
+app.io.route('play-again', function(req) {
+    if (!req.session.authenticated) {
+        return;
+    }
+    
+    req.io.room(getRoom(req)).broadcast('play-again', req.data);
+});
+
+app.io.route('signin', function(req) {
+    var nickname = req.data.nickname;
+	var password = req.data.password;
 
 	UserModel.findOne({ nickname: nickname, password: md5(password) }, function(err, user) {
 		var response = {};
@@ -96,25 +159,41 @@ app.post('/signin', function(req, res) {
 		if (err) {
 			response.success = false;
 			response.error = 'db-issue';
+            
+            req.io.respond(response);
 		}
 		else if (user) {
-			response.success = true;
+            if (users.isSignedIn(user._id.toString())) {
+                response.success = false;
+                response.error = 'already-signed-in';
+                
+                req.io.respond(response);
+            }
+            else {
+                users.signIn(req.io.socket.id, user._id.toString());
+                
+                response.success = true;
 
-			req.session.authenticated = true;
-			req.session.user = user;
+                req.session.authenticated = true;
+                req.session.user = user;
+
+                req.session.save(function() {
+                    req.io.respond(response);
+                });
+            }
 		}
 		else {
 			response.success = false;
 			response.error = 'incorrect-info';
+            
+            req.io.respond(response);
 		}
-
-		res.send(JSON.stringify(response));
 	});
 });
 
-app.post('/signup', function(req, res) {
-	var nickname = req.body.nickname;
-	var password = req.body.password;
+app.io.route('signup', function(req) {
+	var nickname = req.data.nickname;
+	var password = req.data.password;
 
 	UserModel.findOne({ nickname: nickname, password: md5(password) }, function(err, user) {
 		var response = {};
@@ -123,13 +202,13 @@ app.post('/signup', function(req, res) {
 			response.success = false;
 			response.error = 'db-issue';
 
-			res.send(JSON.stringify(response));
+			req.io.respond(response);
 		}
 		else if (user) {
 			response.success = false;
 			response.error = 'already-exists';
 
-			res.send(JSON.stringify(response));
+			req.io.respond(response);
 		}
 		else {
 			var user = new UserModel({ nickname: nickname, password: md5(password) });
@@ -146,14 +225,18 @@ app.post('/signup', function(req, res) {
 					req.session.user = user;
 				}
 
-				res.send(JSON.stringify(response));
+				req.io.respond(response);
 			});
 		}
 	});
 });
 
-app.get('/statistics', function(req, res) {
-	UserModel.findOne({ nickname: req.session.user.nickname }, function(err, user) {
+app.io.route('user-info', function(req) {
+	if (!req.session.authenticated) {
+        return;
+    }
+    
+    UserModel.findOne({ nickname: req.session.user.nickname }, function(err, user) {
 		var response = {};
 
 		if (err) {
@@ -161,70 +244,18 @@ app.get('/statistics', function(req, res) {
 		}
 		else {
 			response.success = true;
+            
+            response.nickname = user.nickname;
 			response.wins = user.wins;
 			response.losses = user.losses;
 		}
 
-		res.send(JSON.stringify(response));
+		req.io.respond(response);
 	});
 });
 
-app.use(function(req, res, next){
-    res.setHeader('Content-Type', 'text/html');
-    res.render('404.ejs', { title: 'HoneyFoo - Resource not found' });
+app.get('/', function(req, res) {
+    res.sendfile(__dirname + '/client.html');
 });
 
-io.on('connection', function(socket) {
-	console.log('Client connected !');
-
-	var session = socket.request.session;
-
-	// If the user is authenticated and actually is in a room
-	if (session.authenticated && session.room) {
-		console.log('Client authenticated !');
-
-		if (rooms.exists(session.room.id) && !rooms.isFull(session.room.id)) {
-			rooms.addUser(session.room.id, session.user._id, socket);
-
-			rooms.emit(session.room.id, 'nbr-of-players', rooms.getNumberOfPlayers(session.room.id));
-
-			socket.on('pawn-created', function(coords) {
-				rooms.emit(session.room.id, 'pawn-created', coords, session.user._id);
-			});
-
-			socket.on('game-over', function(results) {
-				if (results.tie === true) {
-					return;
-				}
-
-				UserModel.findOne({ nickname: session.user.nickname }, function(err, user) {
-					if (err) {
-						return;
-					}
-
-					if (results.victory === true) {
-						++user.wins;
-					}
-					else if (results.defeat === true) {
-						++user.losses;
-					}
-
-					user.save();
-				});
-			});
-		}
-	}
-
-	socket.on('disconnect', function() {
-		console.log('Client disconnected !');
-
-		rooms.removeUser(session.room.id, session.user._id);
-
-		if (rooms.isEmpty(session.room.id)) {
-			rooms.remove(session.room.id);
-			// socket.request.session.room = undefined; or something like that
-		}
-	});
-});
-
-server.listen(8080);
+app.listen(8080);

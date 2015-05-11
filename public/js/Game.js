@@ -7,10 +7,14 @@ var Game = {
 	DOMSquares: [],
 	gameType: undefined,
 	callbacks: {},
+    playing: false,
 
 	init: function() {
+        console.log('Game started !');
+        
 		this.board = new Board();
-
+        this.playing = true;
+        
 		if (this.playerColor === undefined) {
 			this.playerColor = BLACK;
 		}
@@ -24,7 +28,7 @@ var Game = {
 		});
 
 		this.board.on('color-changed', function() {
-			if (Game.gameType == OFFLINE) {
+			if (Game.gameType === OFFLINE) {
 				Game.playerColor = this.currentColor;
 			}
 			else {
@@ -35,6 +39,8 @@ var Game = {
 		});
 
 		this.board.on('end', function() {
+            Game.playing = false;
+            
 			var scores = this.getScore();
 
 			var result = '';
@@ -49,7 +55,7 @@ var Game = {
 				result = 'Well, it\'s a tie !';
 			}
 
-			$('#whose-turn').text('The game has ended ! Final scores : ' + scores[BLACK] + ' for black, ' + scores[WHITE] + ' for white. ' + result);
+			$('#whose-turn').text('The game has ended ! Final scores : ' + scores[BLACK] + ' for black, ' + scores[WHITE] + ' for white. ' + result + ' Do you want to play again ? ');
 		});
 
 		var table = $(document.createElement('table'));
@@ -91,6 +97,13 @@ var Game = {
 
 		this.board.toggleCurrentColor();
 	},
+    
+    destroy: function() {
+        $('#game-container').text('');
+        $('#status').text('');
+        $('#color').text('');
+        $('#whose-turn').text('');
+    },
 
 	getRVBColor: function(color) {
 		return color == BLACK ? '#000' : '#fff';
