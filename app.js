@@ -183,8 +183,8 @@ app.io.route('signin', function(req) {
 app.io.route('signup', function(req) {
 	var nickname = req.data.nickname;
 	var password = req.data.password;
-
-	UserModel.findOne({ nickname: nickname, password: md5(password) }, function(err, user) {
+    
+	UserModel.findOne({ nickname: nickname }, function(err, user) {
 		var response = {};
 
 		if (err) {

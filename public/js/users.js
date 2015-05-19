@@ -20,9 +20,7 @@ $(function() {
 		}
 
 		if (success) {
-			io.emit('signup', $(this).serialize(), function(res) {
-				var data = JSON.parse(res);
-
+			io.emit('signup', { nickname: nickname, password: password }, function(data) {
 				if (data.success) {
 					alert('Registration successful !');
 
