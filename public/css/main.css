@@ -1,7 +1,7 @@
 body {
 	background-color: #FFF;
 	background-image: url(../img/pattern.png);
-	font: sans-serif;
+	font-family: Verdana;
 	color: #444;
     overflow-x: hidden;
 }
