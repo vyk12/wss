@@ -1,21 +1,9 @@
 body {
 	background-color: #FFF;
 	background-image: url(../img/pattern.png);
-	font: sans-serif;
+	font-family: Verdana;
 	color: #444;
-    overflow-x: hidden;
-}
-
-#container > div {
-    position: absolute;
-    margin-top: 70px;
-    text-align: center;
-    width: 100%;
-}
-
-.on-right {
-    margin-left: 100%;
-    opacity: 0;
+	font-size: 9pt;
 }
 
 p.turn {
@@ -28,4 +16,29 @@ p.turn {
 .logo {
 	float: left;
 	position: absolute;
+}
+
+.hidden {
+    display: none;
+}
+
+input[type=text] {
+	border: 1px solid #999;
+	margin-bottom: 2px;
+}
+
+input[type=password] {
+	border: 1px solid #999;
+}
+
+input[type=submit] {
+	margin-top: 2px;
+	padding: 3px;
+	background-color: none;
+	border: 0;
+	width: 80px;
+}
+
+input[type=submit]:hover {
+	background-color: #FFF;
 }
