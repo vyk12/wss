@@ -1,9 +1,21 @@
 body {
 	background-color: #FFF;
 	background-image: url(../img/pattern.png);
-	font-family: Verdana;
+	font: sans-serif;
 	color: #444;
-	font-size: 9pt;
+    overflow-x: hidden;
+}
+
+#container > div {
+    position: absolute;
+    margin-top: 70px;
+    text-align: center;
+    width: 100%;
+}
+
+.on-right {
+    margin-left: 100%;
+    opacity: 0;
 }
 
 p.turn {
@@ -16,10 +28,6 @@ p.turn {
 .logo {
 	float: left;
 	position: absolute;
-}
-
-.hidden {
-    display: none;
 }
 
 input[type=text] {
