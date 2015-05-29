@@ -2,6 +2,7 @@ body {
 	background-color: #FFF;
 	background-image: url(../img/pattern.png);
 	font-family: Verdana;
+    font-size: 9pt;
 	color: #444;
     overflow-x: hidden;
 }
@@ -42,7 +43,7 @@ input[type=password] {
 input[type=submit] {
 	margin-top: 2px;
 	padding: 3px;
-	background-color: none;
+	background-color: #777;
 	border: 0;
 	width: 80px;
 }
