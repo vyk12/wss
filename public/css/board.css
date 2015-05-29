@@ -1,11 +1,16 @@
 table {
 	width: auto;
 	margin: auto;
+	border-collapse: collapse;
+	background-color: #000;
+	background-image: url(../img/texture.jpg);
+	opacity: 0.8;	
+	border: 2px solid white;
 }
 
 td {
-	width: 100px;
-	height: 100px;
-	border: 1px solid #040;
-	background-color: #080;
+	width: 70px;
+	height: 70px;
+	border: 1px solid #000;
+	background-color: none;
 }

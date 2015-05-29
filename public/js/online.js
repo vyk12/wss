@@ -1,6 +1,7 @@
 Game.gameType = ONLINE;
 
 var playAgain;
+var waitingForAnswer = false;
 
 var startGame = function() {
     $('#status').text('');
@@ -13,6 +14,7 @@ var startGame = function() {
 
     Game.board.on('end', function() {
         playAgain = false;
+        waitingForAnswer = true;
         
         var scores = this.getScore();
 
@@ -28,11 +30,13 @@ var startGame = function() {
             
             var interval = setInterval(function() {
                 if (App.currentPage !== 3) {
+                    waitingForAnswer = false;
                     clearInterval(interval);
                     return;
                 }
                 
                 if (playAgain) {
+                    waitingForAnswer = false;
                     startGame();
                     clearInterval(interval);
                 }
@@ -51,7 +55,6 @@ var startGame = function() {
 
 io.emit('join', function(nbrOfPlayers) {
 	if (nbrOfPlayers === 1) {
-        console.log('You are the first one !');
 		Game.playerColor = BLACK;
 		$('#status').html('Waiting for a player...');
 	}
@@ -72,7 +75,7 @@ io.on('play-again', function(response) {
 io.on('start-game', startGame);
 
 io.on('only-one-connected', function() {
-    if (Game.playing) {
+    if (Game.playing || waitingForAnswer) {
         $('#message').text('Your opponent disconnected.');
         Game.playing = false;
 

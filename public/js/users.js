@@ -22,8 +22,6 @@ $(function() {
 		if (success) {
 			io.emit('signup', { nickname: nickname, password: password }, function(data) {
 				if (data.success) {
-					alert('Registration successful !');
-
 					loggedIn();
 				}
 				else {
@@ -49,8 +47,6 @@ $(function() {
 
 		io.emit('signin', { nickname: nickname, password: password }, function(data) {
 			if (data.success) {
-				alert('Login successful !');
-
 				loggedIn();
 			}
 			else {

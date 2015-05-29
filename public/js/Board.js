@@ -77,7 +77,9 @@ Board.prototype.getScore = function() {
 
 	for (var i = 0; i < 8; ++i) {
 		for (var j = 0; j < 8; ++j) {
-			++scores[this.boxes[i][j].color];
+            if (this.boxes[i][j] !== null) { // If a pawn is in the box
+                ++scores[this.boxes[i][j].color];
+            }
 		}
 	}
 

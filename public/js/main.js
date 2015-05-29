@@ -11,7 +11,7 @@ App = {
             Game.destroy();
         }
         
-        $('#page-' + this.currentPage).addClass('hidden');
+        $('#page-' + this.currentPage).animate({ 'margin-left': this.currentPage < page ? '-100%' : '100%', 'opacity': 0 });
         
         this.currentPage = page;
         
@@ -21,13 +21,13 @@ App = {
                 $('#wins-display').text(res.wins);
                 $('#losses-display').text(res.losses);
                 
-                $('#page-' + App.currentPage).removeClass('hidden');
+                $('#page-' + App.currentPage).animate({ 'margin-left' : '0', 'opacity' : 1 });
             });
         }
         else if (page === 3) {
             $('head').append($(document.createElement('script')).attr({ id: 'gametype', src: '/js/online.js' }));
             
-            $('#page-' + App.currentPage).removeClass('hidden');
+            $('#page-' + App.currentPage).animate({ 'margin-left' : '0', 'opacity' : 1 });
         }
     }
 };

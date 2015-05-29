@@ -10,7 +10,7 @@ var Game = {
     playing: false,
 
 	init: function() {
-        console.log('Game started !');
+        this.destroy();
         
 		this.board = new Board();
         this.playing = true;
@@ -21,10 +21,14 @@ var Game = {
 		}
 
 		this.board.on('pawn-created', function(coords) {
-			$('#box-'+coords[0]+'-'+coords[1]).css('background-color', Game.getRVBColor(this.boxes[coords[0]][coords[1]].color));
+            //var img = $(document.createElement('img')).attr('src', '/img/' + (this.boxes[coords[0]][coords[1]].color === BLACK ? 'black' : 'white') + '-circle.png');
+            //img.appendTo($('#box-'+coords[0]+'-'+coords[1]));
+            
+            $('#box-'+coords[0]+'-'+coords[1]).css('background-color', Game.getRGBColor(this.boxes[coords[0]][coords[1]].color));
 
 			this.boxes[coords[0]][coords[1]].on('change', function() {
-				$('#box-'+coords[0]+'-'+coords[1]).css('background-color', Game.getRVBColor(this.color));
+				//$('#box-'+coords[0]+'-'+coords[1]).find('img').attr('src', '/img/' + (this.color ? 'black' : 'white') + '-circle.png');
+                $('#box-'+coords[0]+'-'+coords[1]).css('background-color', Game.getRGBColor(this.color));
 			});
 		});
 
@@ -32,11 +36,13 @@ var Game = {
 			if (Game.gameType === OFFLINE) {
 				Game.playerColor = this.currentColor;
 			}
-			else {
-				$('#color').text('You play ' + (Game.playerColor === BLACK ? 'black' : 'white') + '.');
-			}
-
-			$('#whose-turn').text('Waiting for ' + (this.currentColor === BLACK ? 'black' : 'white') + '\'s move...');
+            
+            if (this.currentColor === Game.playerColor) {
+                $('#whose-turn').text('It\'s your turn.');
+            }
+            else {
+                $('#whose-turn').text('Waiting for ' + (this.currentColor === BLACK ? 'black' : 'white') + '\'s move...');
+            }
 		});
 
 		this.board.on('end', function() {
@@ -56,7 +62,7 @@ var Game = {
 				result = 'Well, it\'s a tie !';
 			}
 
-			$('#whose-turn').text('The game has ended ! Final scores : ' + scores[BLACK] + ' for black, ' + scores[WHITE] + ' for white. ' + result + ' Do you want to play again ? ');
+			$('#whose-turn').html('The game has ended !<br />Final scores : ' + scores[BLACK] + ' for black, ' + scores[WHITE] + ' for white. ' + result + '<br />Do you want to play again ? ');
 		});
 
 		var table = $(document.createElement('table'));
@@ -106,8 +112,8 @@ var Game = {
         $('#whose-turn').text('');
     },
 
-	getRVBColor: function(color) {
-		return color == BLACK ? '#000' : '#fff';
+	getRGBColor: function(color) {
+		return color == BLACK ? '#222' : '#fff';
 	},
 
 	togglePlayerColor: function() {

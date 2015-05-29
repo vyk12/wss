@@ -8,6 +8,7 @@
         <link rel="stylesheet" type="text/css" href="/css/board.css" />
         
         <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
+        <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
         <script src="/socket.io/socket.io.js"></script>
         <script src="/js/main.js"></script>
         <script src="/js/users.js"></script>
@@ -15,48 +16,50 @@
         <script src="/js/Game.js"></script>
     </head>
     <body>
-        <!-- Sign up / Sign in forms -->
-        <div id="page-1">
-            <h1>Welcome to HoneyFoo</h1>
-            
-            <h3>Sign up</h3>
-            <p>Sign up if you want to play online against millions of players from all over the world. Play, win, and be the #1 !</p>
-            <form action="/signup" method="post" id="sign-up-form">
-                <p>
-                    Nickname : <input type="text" name="nickname" /><br />
-                    Password : <input type="password" name="password" /><br />
-                    <input type="submit" value="Sign up" />
-                </p>
-            </form>
+        <p><img src="img/logo.png" class="logo" alt="logo" /></p>
+        
+        <div id="container">
+            <!-- Sign up / Sign in forms -->
+            <div id="page-1">
+                <h3>Sign up</h3>
+                <p>Sign up if you want to play online against millions of players from all over the world. Play, win, and be the #1 !</p>
+                <form action="/signup" method="post" id="sign-up-form">
+                    <p>
+                        Nickname : <input type="text" name="nickname" /><br />
+                        Password : <input type="password" name="password" /><br />
+                        <input type="submit" value="Sign up" />
+                    </p>
+                </form>
 
-            <h3>Sign in</h3>
-            <form action="/signin" method="post" id="sign-in-form">
-                <p>
-                    Nickname : <input type="text" name="nickname" /><br />
-                    Password : <input type="password" name="password" /><br />
-                    <input type="submit" value="Sign in" />
+                <h3>Sign in</h3>
+                <form action="/signin" method="post" id="sign-in-form">
+                    <p>
+                        Nickname : <input type="text" name="nickname" /><br />
+                        Password : <input type="password" name="password" /><br />
+                        <input type="submit" value="Sign in" />
+                    </p>
+                </form>
+            </div>
+
+            <!-- Place where the player will decide when to start the game -->
+            <div id="page-2" class="on-right">
+                <p id="message"></p>
+                <h3>Welcome, <span id="nickname-display"></span></h3>
+                <p>You have <span id="wins-display"></span> wins against <span id="losses-display"></span> losses</p>
+                <p><button type="button" id="start-game">Start a game against a random player</button></p>
+            </div>
+
+            <!-- Game board -->
+            <div id="page-3" class="on-right">
+                <p id="status"></p>
+                <p id="color"></p>
+                <p id="whose-turn" class="turn"></p>
+                <div id="game-container"></div>
+                <p id="chat">
+                    <span id="chat-messages"></span>
+                    <input type="text" id="chat-message" placeholder="Type your message here" />
                 </p>
-            </form>
-        </div>
-        
-        <!-- Place where the player will decide when to start the game -->
-        <div id="page-2" class="hidden">
-            <p id="message"></p>
-            <h3>Welcome, <span id="nickname-display"></span></h3>
-            <p>You have <span id="wins-display"></span> wins again <span id="losses-display"></span> losses</p>
-            <p><button type="button" id="start-game">Start a game against a random player</button></p>
-        </div>
-        
-        <!-- Game board -->
-        <div id="page-3" class="hidden">
-            <p id="status"></p>
-            <p id="color"></p>
-            <p id="whose-turn"></p>
-            <div id="game-container"></div>
-            <p id="chat">
-                <span id="chat-messages"></span>
-                <input type="text" id="chat-message" placeholder="Type your message here" />
-            </p>
+            </div>
         </div>
     </body>
 </html>

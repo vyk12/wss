@@ -1,3 +1,31 @@
-.hidden {
-    display: none;
+body {
+	background-color: #FFF;
+	background-image: url(../img/pattern.png);
+	font: sans-serif;
+	color: #444;
+    overflow-x: hidden;
+}
+
+#container > div {
+    position: absolute;
+    margin-top: 70px;
+    text-align: center;
+    width: 100%;
+}
+
+.on-right {
+    margin-left: 100%;
+    opacity: 0;
+}
+
+p.turn {
+	text-align: center;
+	font-variant: small-caps;
+	letter-spacing: 2px;
+	font-weight: bold;
+}
+
+.logo {
+	float: left;
+	position: absolute;
 }
